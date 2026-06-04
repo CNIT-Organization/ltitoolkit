@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtualenvs
+.venv/
+venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Keys / secrets (never commit tool private keys)
+*.pem
+.env
+
+# Reference clone we vendored from (kept locally, not part of the package)
+/pylti1.3/
