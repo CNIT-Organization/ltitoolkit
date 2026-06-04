@@ -38,10 +38,24 @@ src/ltitoolkit/
 └── dynamic_registration/  # single-URL install (Phase 5)
 ```
 
-## Install (development)
+## Install (as a dependency)
+
+Published via Git (no PyPI required). Pin to a tag:
 
 ```bash
-pip install -e ".[fastapi,dev]"
+pip install "git+https://github.com/CNIT-Organization/ltitoolkit.git@v0.1.0"
+# with the FastAPI adapter:
+pip install "ltitoolkit[fastapi] @ git+https://github.com/CNIT-Organization/ltitoolkit.git@v0.1.0"
+```
+
+## Develop (uv)
+
+```bash
+uv sync            # create the env + install runtime, fastapi extra, and dev tools
+uv run pytest      # tests
+uv run ruff check src tests
+uv run mypy src
+uv build           # build wheel + sdist into dist/
 ```
 
 ## License
