@@ -93,6 +93,43 @@ def test_mint_token_and_assertion_claims(keypair):
     assert claims["jti"].startswith("ltitoolkit-")
 
 
+def test_assertion_kid_header_uses_pinned_kid(keypair):
+    """When the registration pins a kid, the assertion header carries it.
+
+    Brightspace (and the LTI spec) require the client-credentials assertion to
+    name the signing key via a ``kid`` header that the platform can resolve in
+    the tool's JWKS. A PEM private key carries no kid, so the tool must pin one.
+    """
+    private_pem, public_pem = keypair
+    session = FakeSession(responses=[ok_token()])
+    registration = make_registration(private_pem).set_kid("nm-lti-tool-1")
+    service = AccessTokenService(registration, session=session, clock=lambda: 1000.0)
+
+    service.get_token(["s"])
+
+    header = jwt.get_unverified_header(session.calls[0]["data"]["client_assertion"])
+    assert header["kid"] == "nm-lti-tool-1"
+    assert header["alg"] == "RS256"
+
+
+def test_assertion_omits_kid_when_unpinned(keypair):
+    """Backward-compatible: no pinned kid and no public key → no kid header.
+
+    Preserves the pre-existing behaviour for the AGS/NRPS/deep-link signing
+    paths that never pinned a kid.
+    """
+    private_pem, _ = keypair
+    session = FakeSession(responses=[ok_token()])
+    service = AccessTokenService(
+        make_registration(private_pem), session=session, clock=lambda: 1000.0
+    )
+
+    service.get_token(["s"])
+
+    header = jwt.get_unverified_header(session.calls[0]["data"]["client_assertion"])
+    assert "kid" not in header
+
+
 def test_token_is_cached_per_scope(keypair):
     private_pem, _ = keypair
     session = FakeSession(responses=[ok_token()])

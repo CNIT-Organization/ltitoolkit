@@ -18,6 +18,7 @@ class Registration:
     _tool_private_key: t.Optional[str] = None
     _auth_audience: t.Optional[str] = None
     _tool_public_key = None
+    _kid: t.Optional[str] = None
 
     def get_issuer(self) -> t.Optional[str]:
         return self._issuer
@@ -97,7 +98,20 @@ class Registration:
             keys.append(Registration.get_jwk(public_key))
         return keys
 
+    def set_kid(self, kid: str) -> "Registration":
+        """Pin the ``kid`` used in signed client assertions.
+
+        Set this when the tool publishes its JWKS with an explicit key id (e.g.
+        a named ``kid`` rather than a PEM-derived thumbprint), so the assertion
+        header ``kid`` matches a key the platform can resolve in the JWKS. When
+        unset, ``get_kid`` falls back to the public key's own ``kid`` (if any).
+        """
+        self._kid = kid
+        return self
+
     def get_kid(self) -> t.Optional[str]:
+        if self._kid:
+            return self._kid
         key = self.get_tool_public_key()
         if key:
             jwk = Registration.get_jwk(key)
